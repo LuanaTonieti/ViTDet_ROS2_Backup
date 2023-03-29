@@ -49,7 +49,7 @@ model.backbone = L(SimpleFeaturePyramid)(
     square_pad=1024,
 )
 
-#model.roi_heads.box_head.conv_norm = model.roi_heads.mask_head.conv_norm = "LN"
+# model.roi_heads.box_head.conv_norm = model.roi_heads.mask_head.conv_norm = "LN"
 
 # 2conv in RPN:
 model.proposal_generator.head.conv_dims = [-1, -1]

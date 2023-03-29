@@ -34,28 +34,25 @@ except ImportError:
     from configparser import ConfigParser 
 
 
-threshold = 0.35
+threshold = 0.45
 
-cfg = LazyConfig.load("./src/vision_vitdet/vision_vitdet/detectron2/projects/ViTDet/configs/COCO/cascade_mask_rcnn_vitdet_b_100ep.py")
+cfg = LazyConfig.load("./src/vision_vitdet/vision_vitdet/detectron2/projects/ViTDet/configs/COCO/mask_rcnn_vitdet_b_100ep.py")
 
 # edit the config to utilize common Batch Norm
 cfg.model.backbone.norm = "BN"
 cfg.model.roi_heads.num_classes = 2
 
-register_coco_instances("ball_robot", {},"./src/vision_vitdet/vision_vitdet/detectron2/Telstar_Mechta/train/_annotations.coco.json", "./src/vision_vitdet/vision_vitdet/detectron2/Telstar_Mechta/train")
+register_coco_instances("ball_robot", {},"./src/vision_vitdet/vision_vitdet/detectron2/Telstar_Mechta/test/_annotations.coco.json", "./src/vision_vitdet/vision_vitdet/detectron2/Telstar_Mechta/test")
 MetadataCatalog.get("ball_robot").thing_classes = ['ball', 'robot']
-
+MetadataCatalog.get("ball_robot").set(thing_classes=['ball', 'robot'])
+   
 # print(cfg)
 
-cfg.train.device = "cuda"
+cfg.train.device = "cpu"
 model = instantiate(cfg.model)
 model.to(cfg.train.device)
 model = create_ddp_model(model)
-DetectionCheckpointer(model).load("./src/vision_vitdet/vision_vitdet/detectron2/model_final_cascade.pth")  # load a file, usually from cfg.MODEL.WEIGHTS
-
-
-plt.ion()
-plt.show()
+DetectionCheckpointer(model).load("./src/vision_vitdet/vision_vitdet/detectron2/model_final_mask_rcnn.pth")  # load a file, usually from cfg.MODEL.WEIGHTS
 
 
 class Detect(Node):
@@ -122,11 +119,11 @@ class Detect(Node):
                     y_final_ball = box_tensor_ball.data[3].item()
                     start_ball = (int(x_inicial_ball), int(y_inicial_ball))
                     final_ball = (int(x_final_ball), int(y_final_ball))
-                    cv2.rectangle(img, start_ball, final_ball, (255, 0, 0), 3)
+                    cv2.rectangle(img, start_ball, final_ball, (255, 0, 0), 2)
                     img = cv2.putText(img, labels[i], (int(x_inicial_ball), int(y_inicial_ball)-4), cv2.FONT_HERSHEY_SIMPLEX, 
-                        0.5, (255, 0, 0), 2, cv2.LINE_AA)
+                        0.5, (255, 0, 0), 1, cv2.LINE_AA)
                     img = cv2.putText(img, str(round(score,3)), (int(x_inicial_ball), int(y_final_ball)+14), cv2.FONT_HERSHEY_SIMPLEX, 
-                        0.5, (255, 0, 0), 2, cv2.LINE_AA)
+                        0.5, (255, 0, 0), 1, cv2.LINE_AA)
                     x_ball = (int((x_final_ball + x_inicial_ball)/2))
                     y_ball = (int(y_final_ball + y_inicial_ball)/2)
                 
@@ -141,11 +138,11 @@ class Detect(Node):
                     y_final_robot = box_tensor_robot.data[3].item()
                     start_robot = (int(x_inicial_robot), int(y_inicial_robot))
                     final_robot = (int(x_final_robot), int(y_final_robot))
-                    cv2.rectangle(img, start_robot, final_robot, (255, 0, 0), 3)
+                    cv2.rectangle(img, start_robot, final_robot, (255, 0, 0), 2)
                     img = cv2.putText(img, labels[i], (int(x_inicial_robot), int(y_inicial_robot)-4), cv2.FONT_HERSHEY_SIMPLEX, 
-                        0.5, (255, 0, 0), 2, cv2.LINE_AA)
+                        0.5, (255, 0, 0), 1, cv2.LINE_AA)
                     img = cv2.putText(img, str(round(score,3)), (int(x_inicial_robot), int(y_final_robot)+14), cv2.FONT_HERSHEY_SIMPLEX, 
-                        0.5, (255, 0, 0), 2, cv2.LINE_AA)
+                        0.5, (255, 0, 0), 1, cv2.LINE_AA)
                     x_robot = (int(x_final_robot + x_inicial_robot)/2)
                     y_robot = (int(y_final_robot + y_inicial_robot)/2)
                 
@@ -308,16 +305,12 @@ class Detect(Node):
                 
         
         print(f'Time total: {time.time() - start_timer}')
-        #cv2.imshow("RoboFEI",img)
-        plt.clf()
-        plt.rcParams["figure.figsize"] = [20, 20]
-        plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB), extent=[0, 3500, 0, 2000])
-        plt.show()
-        plt.pause(0.001)
+        cv2.imshow("RoboFEI",img)
+        
         
 # as opencv loads in BGR format by default, we want to show it in RGB.
         
-        if  0xFF == ord('q'):
+        if cv2.waitKey(25) and 0xFF == ord('q'):
             print("FINISHED SUCCESSFULLY!")
             cam.release()
             cv2.destroyWindow("RoboFEI")

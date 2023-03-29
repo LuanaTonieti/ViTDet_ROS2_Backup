@@ -21,16 +21,16 @@ cfg = LazyConfig.load("./projects/ViTDet/configs/COCO/mask_rcnn_vitdet_b_100ep.p
 
 # edit the config to utilize common Batch Norm
 cfg.model.backbone.norm = "BN"
-cfg.model.roi_heads.num_classes = 1
+cfg.model.roi_heads.num_classes = 2
 
 model = instantiate(cfg.model)
 
 # DetectionCheckpointer(model).load("./model_final_61ccd1.pkl")  # load a file, usually from cfg.MODEL.WEIGHTS
 model.to(cfg.train.device)
 model = create_ddp_model(model)
-DetectionCheckpointer(model).load("./model_final.pth")  # load a file, usually from cfg.MODEL.WEIGHTS
-register_coco_instances("ball_train", {},"./train/_annotations.coco.json", "./train")
-MetadataCatalog.get("ball_train").thing_classes = ['ball']
+DetectionCheckpointer(model).load("./model_final_mask.pth")  # load a file, usually from cfg.MODEL.WEIGHTS
+register_coco_instances("ball_train", {},"./Telstar_Mechta/test/_annotations.coco.json", "./Telstar_Mechta/test")
+MetadataCatalog.get("ball_train").thing_classes = ['ball', 'robot']
 
 
 # read image for inference input
@@ -70,7 +70,7 @@ for i in range(len(predictions["instances"])):
 	score = predictions["instances"][i].get("scores").item()
 	if (score>threshold):
 		cv2.rectangle(im, start, final, color, 5)
-cv2.imshow("bola",im)
+cv2.imshow("RoboFEI",im)
 cv2.waitKey(0)
 
 
