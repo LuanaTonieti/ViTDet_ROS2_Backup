@@ -148,7 +148,6 @@ def main(args):
     cfg.dataloader.train.dataset.names = "ball_train"
     cfg.dataloader.test.dataset.names = "ball_test"
     dataset_dicts = DatasetCatalog.get("ball_train")
-    print("oooooooooooooooooooooooooooooooooooooooooooooooooo")
     print(MetadataCatalog.get("ball_train"))
     MetadataCatalog.get("ball_train").set(thing_classes=["ball"])
     MetadataCatalog.get("ball_train").thing_classes=["ball"]
@@ -173,9 +172,7 @@ def main(args):
         print(do_test(cfg, model))
     else:
         cfg.model.backbone.norm = "BN"
-        print("LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL")
         print(cfg.dataloader.train)
-        print("LLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL")
         cfg.train.max_iter=1000
         cfg.train.output_dir='./train_ball_1000'
         cfg.model.roi_heads.num_classes = 1
